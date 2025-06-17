@@ -1,8 +1,20 @@
 import streamlit as st
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
+import logging
+from datetime import datetime
+import os
 
-# Поддерживаемые модели DialoGPT
+# Настройка логирования
+LOG_FILE = "chat_logs.txt"
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.INFO,
+    format="%(asctime)s — %(message)s",
+    encoding='utf-8'
+)
+
+# Список моделей DialoGPT
 model_names = {
     "DialoGPT small": "microsoft/DialoGPT-small",
     "DialoGPT medium": "microsoft/DialoGPT-medium",
@@ -22,36 +34,43 @@ def generate_response(tokenizer, model, chat_history_ids, user_input):
     response = tokenizer.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
     return chat_history_ids, response
 
+# Заголовок приложения
 st.title("BOtCH — чат-бот на DialoGPT")
 
 # Выбор модели
 model_choice = st.selectbox("Выберите модель DialoGPT", list(model_names.keys()))
 tokenizer, model = load_model(model_names[model_choice])
 
-# Инициализация сессии для истории
+# Инициализация состояния сессии
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = None
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Ввод пользователя
+# Ввод сообщения пользователем
 user_input = st.text_input("Введите сообщение", "")
 
-# Кнопки
+# Кнопки управления
 col1, col2 = st.columns([1,1])
 with col1:
-    if st.button("Отправить") and user_input.strip() != "":
+    if st.button("Отправить") and user_input.strip():
         st.session_state.chat_history, bot_response = generate_response(tokenizer, model, st.session_state.chat_history, user_input)
         st.session_state.messages.append(("Пользователь", user_input))
         st.session_state.messages.append(("БОТ", bot_response))
+        
+        # Логирование
+        logging.info(f"User: {user_input}")
+        logging.info(f"Bot: {bot_response}")
 with col2:
     if st.button("Очистить историю"):
         st.session_state.chat_history = None
         st.session_state.messages = []
 
-# Отобразить диалог
+# Отображение истории сообщений
 for speaker, msg in st.session_state.messages:
     if speaker == "Пользователь":
         st.markdown(f"**{speaker}:** {msg}")
     else:
         st.markdown(f"<div style='color: green'><b>{speaker}:</b> {msg}</div>", unsafe_allow_html=True)
+
+streamlit run app.py
