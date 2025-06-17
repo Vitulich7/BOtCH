@@ -12,4 +12,11 @@ nltk==3.8.1
 
 # Matplotlib — библиотека для визуализации результатов и метрик
 matplotlib==3.7.1
+
+# Pandas — для анализа логов, построения метрик и таблиц
+pandas==2.1.0
+
+# Pytest — для модульного тестирования
+pytest==7.4.0
+
 pip install -r requirements.txt
