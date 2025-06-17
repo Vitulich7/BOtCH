@@ -12,3 +12,4 @@ nltk==3.8.1
 
 # Matplotlib — библиотека для визуализации результатов и метрик
 matplotlib==3.7.1
+pip install -r requirements.txt
